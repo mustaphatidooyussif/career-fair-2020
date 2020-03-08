@@ -60,6 +60,7 @@ class TaskTwo:
                             j = aux[j - 1]
 
             except StopIteration:
+                print("Match is not found.")
                 return None, None 
 
     def _build_aux(self, sub):
@@ -113,8 +114,6 @@ if __name__=="__main__":
             with open("task2_solution-" + output_file + ".txt", "w") as f2:
                 f2.write(country + "\n")
                 f2.write(date + "\n")
-        else:
-            print("Match was not found.")
 
     except IndexError:
         print("Usage: python task2.py covid_data.csv partial_time_series.csv")
