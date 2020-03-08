@@ -24,6 +24,7 @@ class TaskTwo:
 
         aux = self._build_aux(sub)
         n = len(string) 
+        m = len(sub) - 1 
 
         while (i < n):
 
@@ -35,7 +36,7 @@ class TaskTwo:
                 #and j is equal to the total length of the substring. 
                 #a match is found. 
                 if j == len(sub):
-                    return (i-j)
+                    return (i-j) + m
 
             #if there is a mismatch, two conditions are handled.  
             #(whether the mismatch occured at the start or not)
@@ -109,7 +110,7 @@ if __name__=="__main__":
         index = TaskTwo().KMP_search(confirmed_cases, pattern)
 
         #write results to a file
-        output_file = partial_time_series_file.split(".")[0]
+        output_file = covid_data_file.split(".")[0]
         with open("task2_solution-" + output_file + ".txt", "w") as f2:
             f2.write(infor[index][0] + "\n")
             f2.write(infor[index][1] + "\n")

@@ -1,0 +1,10 @@
+(a) China,80422.0
+(b) Republic of Korea, 5328.0
+(c) San Marino, 0.00030117760443333435
+(d) 28.988165680473372
+(e) San Marino, 3.0117760443333435e-05
+(f) Algeria,Armenia,Australia,Austria,Azerbaijan,Belgium,Canada,Czech Republic,Denmark,Dominican Republic,Ecuador,Egypt,Estonia,Finland,France,Georgia,Germany,Greece,Iceland,India,Indonesia,Iran,Iraq,Ireland,Israel,Italy,Lebanon,Luxembourg,Malaysia,Mexico,Monaco,Netherlands,New Zealand,Norway,Pakistan,Qatar,Republic of Korea,Romania,Russia,San Marino,Spain,Sweden,Switzerland,United Arab Emirates,United Kingdom,United States of America
+(g) Iran
+(h) Afghanistan,Bahrain,Cases on an international conveyance Japan,China,Japan,Kuwait,North Macedonia,Oman,Taiwan,Thailand
+(i) Japan
+(j) China, 01/11/20

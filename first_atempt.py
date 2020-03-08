@@ -175,10 +175,12 @@ with open("covid_data.csv", "r", encoding="utf-8-sig") as f2:
     earliest_peak_country = next_country["CountryExp"]
     earliest_peak_date = next_country["DateRep"]
 
+    c = 0
     for row in reader2:
         #find overal deaths
         total_deaths += float(row["NewDeaths"])
         total_infections += float(row["NewConfCases"])
+        
 
         #if the country is the same, keep counting infection and deaths 
         #for the country 
@@ -192,6 +194,8 @@ with open("covid_data.csv", "r", encoding="utf-8-sig") as f2:
                 peak_dates.insert(0, row["DateRep"])
                 num_days += 1 
         else:
+            c +=confirmed_cases
+            print(next_country["CountryExp"], confirmed_cases, confirmed_deaths)
             ################## positive trends countries 
             num_recent_inf = len(recent_week_infections) 
 
@@ -289,7 +293,7 @@ with open("covid_data.csv", "r", encoding="utf-8-sig") as f2:
             peak_dates = [None] 
             peak_dates[0] = float(next_country["NewConfCases"])
 
-
+    print(total_deaths, c)
     print("Inf: {}, {}".format(highest_infection_rate, highest_infection_rate_country))
     print("Death: {}, {}".format(highest_death_rate, highest_death_rate_country))
     print("Overall {}".format(overall_death_rate))
