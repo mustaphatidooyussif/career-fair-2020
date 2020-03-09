@@ -4,6 +4,7 @@ from os.path import isfile
 
 """
 Authors: Mustapha Tidoo Yussif and Samuel Atule
+class of 2020
 """
 
 class TaskTwo:
@@ -12,16 +13,18 @@ class TaskTwo:
         self._pattern = []
         self._pattern_len = 0
 
-        self.good_suffix_table = []  # The skip distances table of the pattern for boyer-more
-        # self.good_suffix_table[i] shows the number of steps to take
-        # if a mismatch happens at pattern[i-1]
+        self.good_suffix_table = [] #suffix table as required by boyer moore algorithm. 
         
-        self.bad_match_table = {}  # The bad item skip values of the patten for boyer-moore
+        self.bad_match_table = {}  # values to be used for skipping in case of mismatches
+                                    #as required by the boyer moore algorithm. 
 
     def create_pattern(self, pattern_file):
         """
         This method constructs a list from the partial data file.
         The list is used as a pattern for searching.
+
+        :param pattern_file: the name of the file containing the partial 
+        time series data. 
         :return:
             Modifies the contents of self._pattern & self._pattern_len
         """
@@ -34,6 +37,16 @@ class TaskTwo:
 
 
     def read_covid_data(self, data_file):
+        """
+        This method reads the data from the covid_data.csv file into two list. 
+        The infections list contains the new infection cases in the file and the
+        info list contains the correspoding dates and country for the case. 
+
+        :param data_file: the name of the covid_fie. 
+        :return:
+          :infections: a list of all infection cases in the file. 
+          :info: a list containing (country, data) corresponding to the case. 
+        """
         infections = []
         info = []
         with open(data_file, encoding="utf-8-sig") as f:
@@ -44,12 +57,13 @@ class TaskTwo:
 
         return infections, info
 
+
     def KMP_search(self, data_file):
         """
         This method implements the Knutt-Morris-Pratt (KMP) algorithm. 
         
-        :param data_file: substring or pattern searching for. 
-        :return::
+        :param data_file: the name of the covid_data file. 
+        :return:
             returns the country and the date where th pattern is found. 
         """
         
@@ -89,6 +103,7 @@ class TaskTwo:
 
             except StopIteration:
                 return "not", "found" 
+
 
     def _build_proper_prefix(self):
 
@@ -132,13 +147,20 @@ class TaskTwo:
                 else:
                     aux[j] = i 
                     j += 1
-
         return aux 
 
 
 
     def boyer_more_search(self, values):
+        """
+        This method implements the Boyer-Moore string matching algorithm. 
 
+        :param values: this is a list containing all the new infection 
+                      cases recorder till date. 
+
+        :return:
+          returns the position where a match is found.
+        """
         ln = len(values)
         index = 0
 
@@ -166,6 +188,17 @@ class TaskTwo:
         return -1
 
     def find_pattern(self, data_file, pattern_file, algorithm):
+        """
+        This method calls the string matching functions based. If the 
+        algorithm is set to kmp, the KMP algorithm is called to 
+        find the string matching. This approach is used when the length 
+        of the pattern is shorter. The Boyer-moore algorithm is called 
+        otherwise. And that one is suitable for longer patterns. 
+
+        :param data_file: the name of the covid data file. 
+        :param pattern_file: name of the partial time series file.
+        :param algorithm: the algorithm to call. 
+        """
         if algorithm == "kmp":
             self.create_pattern(pattern_file)
             country, date = self.KMP_search(data_file)
@@ -175,33 +208,31 @@ class TaskTwo:
             self._build_good_suffix_table()
             self._build_bad_match_table()
             index = self.boyer_more_search(infec)
-            self.output_results(info[index][0], info[index][1], data_file)
-
+            if index > 0:
+                self.output_results(info[index][0], info[index][1], data_file)
+            else:
+                self.output_results("not", "found", data_file)
 
 
     def _build_bad_match_table(self):
         """
         A method for pre-processing the skip values for
-        the bad item rule of Boyer-Moore's algorithm
+        the bad match rule of Boyer-Moore's algorithm
         :return:
         Modifies the contents of self._bad_item_skips by setting them
             to the proper.
         """
-        """
-         Original Algorithm: For each symbol of the alphabet, the bad character function should return
-         the position of its rightmost occurrence in the pattern, or-1 if the symbol does not
-         occur in the pattern.
-          
-         My modification; Since my alphabet is infinite (can take any integer > 0), i only
-         assign the position rightmost occurrence of an item in the pattern to it. 
-         Missing items in the pattern are then dealt with during execution. 
-        """
         # keep values to be used for skipping in case of mismatches.
-        # subsequent occurrences of an item in the pattern the override previous ones
+        # subsequent occurrences of an item in the pattern  override previous ones
         for i in range(self._pattern_len):
             self.bad_match_table[self._pattern[i]] = i
 
+
     def _build_good_suffix_table(self):
+        """
+        A method for preprocessing the skip values for the 
+        boyer moore algorithm when there is a match. 
+        """
         ln = self._pattern_len
 
         # tables for skip distances and borders
@@ -262,11 +293,10 @@ class TaskTwo:
         """
 
         if isfile(data_file) and isfile(pattern_file):
-            # self.create_pattern(pattern_file)
-            # country, date = self.KMP_search(data_file)
-            # self.output_results(country, date, data_file)
             self.create_pattern(pattern_file)
 
+            #if the length of the pattern string is less than 15,
+            #call KMP
             if self._pattern_len < 15:
                 self.find_pattern(data_file, pattern_file, "kmp")
             else:

@@ -1,4 +1,4 @@
-(a) China,80422.0
+(a) China, 80422.0
 (b) Republic of Korea, 5328.0
 (c) San Marino, 0.00030117760443333435
 (d) 28.988165680473372

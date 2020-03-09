@@ -5,34 +5,37 @@ import csv
 import math 
 import sys
 from datetime import datetime
+from os.path import isfile
 
 class TaskOne:
     def __init__(self, data):
-        #finding overall death rate
+        
+        #initialize total comfirmed cases and deaths. 
         self.total_confirmed_deaths = data["init_confirmed_deaths"]
         self.total_confirmed_cases = data["init_confirmed_cases"]
 
-        #Keep count of infections and deaths 
+        #Keep count of infections and deaths for each country. 
         self.confirmed_deaths_by_country = data["init_confirmed_deaths"]
         self.confirmed_cases_by_country = data["init_confirmed_cases"]
 
+        #Keep the most recent 7 data points. 
         self.num_days = 1
         self.recent_week_infections = [None] 
         self.recent_week_infections[0] = data["init_confirmed_cases"]
 
-        #finding  trends
-        # self.recent_week_dates = [None]
-        # self.recent_week_dates[0] = data["init_date"]
-
+        #List of positive and negative trend countries. 
         self.positive_trend_countries = []
         self.negative_trend_countries = []
 
+        #Initialize the steepest increase and country. 
         self.steepest_increase = -1
         self.steepest_increase_country = data["init_country_name"]
 
+        #Initialize the steepest decrease and country. 
         self.steepest_decrease = 1
         self.steepest_decrease_country =  data["init_country_name"]
 
+        #initialize the earlies peak country and date. 
         self.earliest_peak_country = data["init_country_name"]
         self.earliest_peak_date = datetime.strptime(data["init_date"], '%m/%d/%y')
 
@@ -54,16 +57,37 @@ class TaskOne:
         self.highest_death_rate = 0.0
         self.highest_death_rate_country = data["init_country_name"]
 
-
+        #Initialze the last peak point, country and date for each country. 
+        #This is the earliest peak point, and date for each country because 
+        #the data is arrange in a reverse chronological order. 
         self.last_peak_value = 0
         self.last_peak_country = ""
         self.last_peak_date = ""
 
+        #Contains data for population of the countries. 
+        self.population = {}
+
+    def read_population_data(self, file):
+        """
+        This method reads the data in the population_data file and 
+        stores the data in a dictionary. The format of the 
+        dictionary is {"country_name": population_value}.
+
+        :param file: the name of the file containing the population. 
+        """
+        with open(file, encoding="utf-8-sig") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                self.population[row["Country"]] = row["Population"]      
+
     def update_totals(self, x, y):
 
         """
-        Updates the total number of confirmed cases 
+        This method Updates the total number of confirmed cases 
         and confirmed deaths.
+
+        :param x: confirmed infection case value. 
+        :param y: confirmed death value.
         """
         self.total_confirmed_cases += float(x) 
         self.total_confirmed_deaths += float(y) 
@@ -83,6 +107,8 @@ class TaskOne:
     def update_recent_week_data_by_country(self, case):
         """
         Gets the most recent one week confirmed cases and dates.
+
+        :param case: confirmed case value. 
         """
         self.recent_week_infections.insert(0, float(case))
 
@@ -90,6 +116,14 @@ class TaskOne:
         """
         Finds the correlation coefficient between X and Y. 
         It helps us determine the trends in the new confirmed cases. 
+
+        :param X: the most recent confirmed infection case values. 
+        :param Y: most recent last 7 days. We generated 7 numbers to 
+        represent the most recent 7 days in order to calculate the correlation
+        coefficient. 
+        :param n: the length of X or Y. In this case, it will always be 7. 
+        :return:
+            the correlation coefficient between X and Y. 
         """
         sum_X = 0
         sum_Y = 0
@@ -126,7 +160,12 @@ class TaskOne:
             print("Zero division is not allowed")
 
     def update_trend(self, pos_country = None, neg_country = None):
+        """
+        This method updates the positve or negative trend countries list. 
 
+        :param pos_country: a positive trend country. 
+        :param neg_country :a negative trend country. 
+        """
         #Adds country with the number of new infections per day on the rise. 
         if pos_country is not None:
             self.positive_trend_countries.append(pos_country)
@@ -135,23 +174,27 @@ class TaskOne:
         if neg_country is not None:
             self.negative_trend_countries.append(neg_country)
 
+
     def find_steepest_increase(self, pos_corr, country):
         """
-        Updates country witht the speepest increase.
+        This method Updates country witht the speepest increase.
 
-        params:
-            pos_corr: positve correlation coefficient. 
-            country: name of the country. 
+        :param pos_corr: positve correlation coefficient. 
+        :param country: name of the country. 
         """
-        if  corr > self.steepest_increase:
+        if  pos_corr > self.steepest_increase:
             self.steepest_increase =  pos_corr
             self.steepest_increase_country = country
+
 
     def find_steepest_decrease(self, neg_corr, country):
         """
         This method Updates country with the speepest decrease. 
+
+        :param pos_corr: negative correlation coefficient. 
+        :param country: name of the country. 
         """
-        if  corr < self.steepest_decrease:
+        if  neg_corr < self.steepest_decrease:
             self.steepest_decrease =  neg_corr
             self.steepest_decrease_country = country
     
@@ -162,7 +205,11 @@ class TaskOne:
         date is read in reverse chronological with the most recent date 
         being read first. As the result, the last peak in this case, becomes
         the earliest peak. It keeps comparing and updating the peak and peak date
-        till the last peak. 
+        till the last peak. We are considering local peaks. For example if
+        infection[i] < infection[j] > infection[k] for i < j < k, infection[j]
+        is a peak value. Howere, the peak value is the last value when the data 
+        is sorted in ascending order. It is the first value when sorted in 
+        descending order. 
 
         :param a: the current new infection case recorded for the country. 
         :param b: the new new infection case recorded for the country. 
@@ -173,6 +220,7 @@ class TaskOne:
             self.last_peak_value = a
             self.last_peak_country = cur_country
             self.last_peak_date = datetime.strptime(cur_date, "%m/%d/%y")
+
 
     def find_earliest_peak_country(self, peak_index, country):
         """
@@ -186,6 +234,7 @@ class TaskOne:
         if peak_date < self.earliest_peak_date:
             self.earliest_peak_date = peak_date
             self.earliest_peak_country = country
+
 
     def find_top_2(self, cur_count, cur_country):
         """
@@ -223,6 +272,7 @@ class TaskOne:
         """
         return a/float(b)
 
+
     def update_highest_infection_rate(self, cur_rate, cur_country):
         """
         This method updates the highest  infection rate and the country with the 
@@ -238,6 +288,7 @@ class TaskOne:
         if cur_rate > self.highest_infection_rate:
             self.highest_infection_rate = cur_rate
             self.highest_infection_rate_country = cur_country
+
 
     def update_highest_death_rate(self, cur_rate, cur_country):
         """
@@ -255,129 +306,16 @@ class TaskOne:
             self.highest_death_rate = cur_rate
             self.highest_death_rate_country = cur_country
 
-if __name__=="__main__":
 
-    try:
+    def output_results(self, t, filename):
+        """
+        This method writes the results of the task1 into 
+        a file located in the same folder as the program. 
 
-        #get files from command line
-        covid_data_file = sys.argv[1]
-        population_data_file = sys.argv[2]
-
-        population = {}
-        with open(population_data_file, "r") as f:
-            reader = csv.DictReader(f)
-            count = 0
-            for row in reader:
-                population[row["Country"]] = row["Population"]
-
-        with open(covid_data_file, "r", encoding="utf-8-sig") as f2:
-            reader2 = csv.DictReader(f2)
-
-            #get the first row
-            next_country = next(reader2)
-
-            init_data = {
-                "init_country_name": next_country["CountryExp"],
-                "init_confirmed_cases": float(next_country["NewConfCases"]),
-                "init_confirmed_deaths": float(next_country["NewDeaths"]),
-                "init_date": next_country["DateRep"]
-            }
-            
-            # Initialize the class. 
-            t = TaskOne(init_data)
-
-            possible_earliest_peak = 0
-            possible_earliest_peak_country = ""
-            possible_earliest_peak_date = ""
-
-            previous = next_country
-
-            for row in reader2:
-                #find overall deaths and infections
-                t.update_totals(row["NewConfCases"], row["NewDeaths"])
-
-                #if the country is the same, keep counting infection and deaths 
-                #for the country 
-                if row["CountryExp"] == next_country["CountryExp"]:
-                    t.update_by_country(row["NewConfCases"], row["NewDeaths"])
-
-                    #update the earliest peak for each country. 
-                    current = row
-                    t.find_last_peak_by_country(
-                        previous["NewConfCases"], current["NewConfCases"], 
-                        previous["CountryExp"], previous["DateRep"])
-
-                    previous = current
-
-                    #Append only the most recent one week
-                    if t.num_days < 7:
-                        t.update_recent_week_data_by_country(row["NewConfCases"])
-                        t.num_days += 1 
-
-                else:
-                    ################## positive trends countries 
-                    num_recent_inf = len(t.recent_week_infections)
-
-                    #ignore countries with less than 7 infection records
-                    #and countries that have the same new infections case throughout the week.
-                    # e. g [1,1,1,1,1,1,1]
-                    if num_recent_inf == 7 and \
-                        not all(t.recent_week_infections[i] == t.recent_week_infections[i+1] for i in range(num_recent_inf-1)):
-
-                        days_in_week = list(range(1,8))
-                        corr = t.cor_coefficient(days_in_week, t.recent_week_infections, num_recent_inf)
-
-                        #both negative and positive peaks 
-
-                        #check correlation coefficient.
-                        if corr > 0:
-                            t.update_trend(pos_country = next_country["CountryExp"], neg_country = None)
-
-                            #update the country with the steepest increase. 
-                            if corr > t.steepest_increase:
-                                t.find_steepest_increase(corr, next_country["CountryExp"])
-
-                        elif corr < 0:
-                            t.update_trend(pos_country = None, neg_country = next_country["CountryExp"])
-
-                            #update the country with the steepest decrease. 
-                            if corr < t.steepest_decrease:
-                                t.find_steepest_decrease(corr, next_country["CountryExp"])
-
-                            
-                            if t.earliest_peak_date > t.last_peak_date:
-                                t.earliest_peak_date = t.last_peak_date
-                                t.earliest_peak_country = t.last_peak_country 
-
-                    ############# Highest infection and country##############
-                    #Update the current highest and second higest infection and deaths
-                    t.find_top_2(t.confirmed_cases_by_country, next_country["CountryExp"])
-
-                    
-                    if next_country["CountryExp"] in population: #TODO: COrrect this. too inefficient. use try and catch
-                        #######################infection rate##############
-                                    
-                        inf_rate = t.calculate_rate(t.confirmed_cases_by_country, population[next_country["CountryExp"]])
-
-                        t.update_highest_infection_rate(inf_rate, next_country["CountryExp"])
-                    
-                        #######################death rate##############
-                        death_rate = t.calculate_rate(t.confirmed_deaths_by_country, population[next_country["CountryExp"]])
-                        t.update_highest_death_rate(death_rate, next_country["CountryExp"])
-
-                    #move to the next country
-                    next_country = row
-                    t.confirmed_cases_by_country = float(next_country["NewConfCases"]) #for next country
-                    t.confirmed_deaths_by_country = float(next_country["NewDeaths"]) #for next country
-                    t.num_days = 1
-                    t.recent_week_infections = [None]
-                    t.recent_week_infections[0] = float(next_country["NewConfCases"])
-
-            ##############################Overal death rate@####################
-            t.overall_death_rate = t.calculate_rate(t.total_confirmed_cases, t.total_confirmed_deaths)
-
+        :param filename: name ofe input file. 
+        """
         #write results to a file
-        output_file = covid_data_file.split(".")[0]
+        output_file = filename.split(".")[0]
         with open("task1_solution-" + output_file + ".txt", "w") as f2:
             f2.write("(a) " + t.highest_infection_country + ", " +str(t.highest_infection) + "\n")
             f2.write("(b) " + t.second_highest_infection_country + ", " + str(t.second_highest_infection) + "\n")
@@ -389,6 +327,163 @@ if __name__=="__main__":
             f2.write("(h) " +",".join(t.negative_trend_countries) + "\n")
             f2.write("(i) " + t.steepest_decrease_country  + "\n")
             f2.write("(j) " +t.earliest_peak_country + ", " + t.earliest_peak_date.strftime("%m/%d/%y") + "\n")
+
+
+def task1(covid_file, population_file):
+    """
+    This function is the main logic of the task. It  creates an object
+    of the TaskOne class and uses the methods of the class to answer the
+    questions. 
+    """
+    with open(covid_file, "r", encoding="utf-8-sig") as f2:
+        reader2 = csv.DictReader(f2)
+
+        #get the first row
+        next_country = next(reader2)
+
+        init_data = {
+            "init_country_name": next_country["CountryExp"],
+            "init_confirmed_cases": float(next_country["NewConfCases"]),
+            "init_confirmed_deaths": float(next_country["NewDeaths"]),
+            "init_date": next_country["DateRep"]
+        }
+            
+        # Initialize the class. 
+        t = TaskOne(init_data)
+        t.read_population_data(population_file)
+
+        possible_earliest_peak = 0
+        possible_earliest_peak_country = ""
+        possible_earliest_peak_date = ""
+
+        previous = next_country
+
+        for row in reader2:
+            #find overall deaths and infections
+            t.update_totals(
+                row["NewConfCases"], row["NewDeaths"]
+            )
+
+            #if the country is the same, keep counting infection and deaths 
+            #for the country 
+            if row["CountryExp"] == next_country["CountryExp"]:
+                t.update_by_country(
+                    row["NewConfCases"], row["NewDeaths"]
+                )
+
+                #update the earliest peak for each country. 
+                current = row
+                t.find_last_peak_by_country(
+                    previous["NewConfCases"], current["NewConfCases"], 
+                    previous["CountryExp"], previous["DateRep"])
+
+                previous = current
+
+                #Append only the most recent one week
+                if t.num_days < 7:
+                    t.update_recent_week_data_by_country(row["NewConfCases"])
+                    t.num_days += 1 
+
+            else:
+                ################## positive trends countries 
+                num_recent_inf = len(t.recent_week_infections)
+
+                #ignore countries with less than 7 infection records
+                #and countries that have the same new infections 
+                # case throughout the week.
+                # e. g [1,1,1,1,1,1,1]
+                if num_recent_inf == 7 and \
+                    not all(t.recent_week_infections[i] ==\
+                         t.recent_week_infections[i+1] \
+                        for i in range(num_recent_inf-1)
+                        ):
+
+                    days_in_week = list(range(1,8))
+                    corr = t.cor_coefficient(
+                        days_in_week, t.recent_week_infections, num_recent_inf
+                    )
+
+                        #both negative and positive peaks 
+
+                        #check correlation coefficient.
+                    if corr > 0:
+                        t.update_trend(
+                            pos_country = next_country["CountryExp"], 
+                            neg_country = None
+                        )
+
+                        #update the country with the steepest increase. 
+                        if corr > t.steepest_increase:
+                            t.find_steepest_increase(
+                                corr, next_country["CountryExp"]
+                            )
+
+                    elif corr < 0:
+                        t.update_trend(
+                            pos_country = None, 
+                            neg_country = next_country["CountryExp"]
+                        )
+
+                        #update the country with the steepest decrease. 
+                        if corr < t.steepest_decrease:
+                            t.find_steepest_decrease(corr, next_country["CountryExp"])
+
+                            
+                        if t.earliest_peak_date > t.last_peak_date:
+                            t.earliest_peak_date = t.last_peak_date
+                            t.earliest_peak_country = t.last_peak_country 
+
+                ############# Highest infection and country##############
+                #Update the current highest and second higest infection and deaths
+                t.find_top_2(
+                    t.confirmed_cases_by_country, 
+                    next_country["CountryExp"]
+                )
+
+                    
+                if next_country["CountryExp"] in t.population: 
+                    
+                    #######################infection rate##############       
+                    inf_rate = t.calculate_rate(
+                        t.confirmed_cases_by_country, 
+                        t.population[next_country["CountryExp"]]
+                    )
+
+                    t.update_highest_infection_rate(inf_rate, next_country["CountryExp"])
+                    
+                    #######################death rate##############
+                    death_rate = t.calculate_rate(
+                        t.confirmed_deaths_by_country, 
+                        t.population[next_country["CountryExp"]]
+                    )
+
+                    t.update_highest_death_rate(
+                        death_rate, next_country["CountryExp"]
+                    )
+
+                 #move to the next country
+                next_country = row
+                t.confirmed_cases_by_country = float(next_country["NewConfCases"]) #for next country
+                t.confirmed_deaths_by_country = float(next_country["NewDeaths"]) #for next country
+                t.num_days = 1
+                t.recent_week_infections = [None]
+                t.recent_week_infections[0] = float(next_country["NewConfCases"])
+
+        ##############################Overal death rate@####################
+        t.overall_death_rate = t.calculate_rate(t.total_confirmed_cases, t.total_confirmed_deaths)
+
+    #write results to a file
+    t.output_results(t, covid_data_file) 
+
+if __name__=="__main__":
+
+    try:
+        #get files from command line
+        covid_data_file = sys.argv[1]
+        population_data_file = sys.argv[2]
+
+        if isfile(covid_data_file) and isfile(population_data_file):
+            task1(covid_data_file, population_data_file)
 
     except IndexError:
         print("Usage: python task1.py covid_data.csv population_data.csv")
