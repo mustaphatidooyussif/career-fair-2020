@@ -12,18 +12,12 @@ class TaskTwo:
         self._pattern = []
         self._pattern_len = 0
 
-        self.good_suffix_table = []  # The skip distances table of the pattern for boyer-more
-        # self.good_suffix_table[i] shows the number of steps to take
-        # if a mismatch happens at pattern[i-1]
-        
-        self.bad_match_table = {}  # The bad item skip values of the patten for boyer-moore
-
     def create_pattern(self, pattern_file):
         """
         This method constructs a list from the partial data file.
         The list is used as a pattern for searching.
         :return:
-            Modifies the contents of self._pattern & self._pattern_len
+            Modifies the contents of self._pattern & self._pattern_ln
         """
 
         with open(pattern_file, encoding="utf-8-sig") as r:
@@ -32,17 +26,6 @@ class TaskTwo:
 
         self._pattern_len = len(self._pattern)
 
-
-    def read_covid_data(self, data_file):
-        infections = []
-        info = []
-        with open(data_file, encoding="utf-8-sig") as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                infections.append(row["NewConfCases"])
-                info.append((row["CountryExp"], row["DateRep"]))
-
-        return infections, info
 
     def KMP_search(self, data_file):
         """
@@ -135,107 +118,6 @@ class TaskTwo:
 
         return aux 
 
-
-
-    def boyer_more_search(self, values):
-
-        ln = len(values)
-        index = 0
-
-        while index <= ln - self._pattern_len:
-            j = self._pattern_len - 1
-
-            while j >= 0 and self._pattern[j] == values[index + j]:
-                j = j - 1
-
-            if j < 0:
-                return index + self._pattern_len - 1
-            else:
-                mismatch = values[index + j]
-                # mismatched items which do not exist in pattern has an occurrence value of -1.
-                step = -1
-                try:
-                    step = self.bad_match_table[mismatch]
-                except KeyError:
-                    pass
-
-                # avoid backward steps in case step is bigger than unmatched_index
-                step = max(1, j - step)
-                index = index + max(step, self.good_suffix_table[j + 1])
-
-        return -1
-
-    def find_pattern(self, data_file, pattern_file, algorithm):
-        if algorithm == "kmp":
-            self.create_pattern(pattern_file)
-            country, date = self.KMP_search(data_file)
-            self.output_results(country, date, data_file)
-        else:
-            infec, info = self.read_covid_data(data_file)
-            self._build_good_suffix_table()
-            self._build_bad_match_table()
-            index = self.boyer_more_search(infec)
-            self.output_results(info[index][0], info[index][1], data_file)
-
-
-
-    def _build_bad_match_table(self):
-        """
-        A method for pre-processing the skip values for
-        the bad item rule of Boyer-Moore's algorithm
-        :return:
-        Modifies the contents of self._bad_item_skips by setting them
-            to the proper.
-        """
-        """
-         Original Algorithm: For each symbol of the alphabet, the bad character function should return
-         the position of its rightmost occurrence in the pattern, or-1 if the symbol does not
-         occur in the pattern.
-          
-         My modification; Since my alphabet is infinite (can take any integer > 0), i only
-         assign the position rightmost occurrence of an item in the pattern to it. 
-         Missing items in the pattern are then dealt with during execution. 
-        """
-        # keep values to be used for skipping in case of mismatches.
-        # subsequent occurrences of an item in the pattern the override previous ones
-        for i in range(self._pattern_len):
-            self.bad_match_table[self._pattern[i]] = i
-
-    def _build_good_suffix_table(self):
-        ln = self._pattern_len
-
-        # tables for skip distances and borders
-        self.good_suffix_table = [0] * (ln + 1)
-        borders = [0] * (ln + 1)
-
-        s = ln
-        m = ln + 1
-
-        # the first item on the right end has maximum
-        borders[s] = m
-
-        while s > 0:
-            while m <= ln and self._pattern[s - 1] != self._pattern[m - 1]:
-
-                if self.good_suffix_table[m] == 0:
-                    self.good_suffix_table[m] = m - s
-
-                m = borders[m]
-
-            s = s - 1
-            m = m - 1
-            borders[s] = m
-
-        # Working with the so called case2 of the good suffix table.
-        k = borders[0]
-        for i in range(ln):
-            if self.good_suffix_table[i] == 0:
-                self.good_suffix_table[i] = k
-
-            if i == k:
-                k = borders[i]
-
-
     def output_results(self, country, date, filename):
         """
         This method writes the results of the task 2(the country and date)
@@ -262,15 +144,9 @@ class TaskTwo:
         """
 
         if isfile(data_file) and isfile(pattern_file):
-            # self.create_pattern(pattern_file)
-            # country, date = self.KMP_search(data_file)
-            # self.output_results(country, date, data_file)
             self.create_pattern(pattern_file)
-
-            if self._pattern_len < 15:
-                self.find_pattern(data_file, pattern_file, "kmp")
-            else:
-                self.find_pattern(data_file, pattern_file, "bm")
+            country, date = self.KMP_search(data_file)
+            self.output_results(country, date, data_file)
         else:
             exit("Error: check files you passed")
 

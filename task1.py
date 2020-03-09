@@ -68,16 +68,14 @@ class TaskOne:
         self.total_confirmed_cases += float(x) 
         self.total_confirmed_deaths += float(y) 
 
-    def get_total_deaths(self):
-        return self.total_confirmed_deaths 
-
-    def get_total_cases(self):
-        return self.total_confirmed_cases 
-
     def update_by_country(self, x, y):
         """
-        Accumulates the number of confirmed cases and 
-        deaths for each country. 
+        A method for accumulating the new confirmed infection cases and confirmed 
+        deaths for each country.
+        :param x: the new confirmed infection case for the country on a particular date.  
+        :param y: the new confirmed death recorded for the country on a particular date. 
+        :return : 
+            None
         """
         self.confirmed_cases_by_country += float(x) 
         self.confirmed_deaths_by_country += float(y)
@@ -151,7 +149,7 @@ class TaskOne:
 
     def find_steepest_decrease(self, neg_corr, country):
         """
-        Updates country witht the speepest decrease.
+        This method Updates country with the speepest decrease. 
         """
         if  corr < self.steepest_decrease:
             self.steepest_decrease =  neg_corr
@@ -159,6 +157,18 @@ class TaskOne:
     
 
     def find_last_peak_by_country(self, a, b, cur_country, cur_date):
+        """
+        This method is supposed to find the earliest peak date. However, the 
+        date is read in reverse chronological with the most recent date 
+        being read first. As the result, the last peak in this case, becomes
+        the earliest peak. It keeps comparing and updating the peak and peak date
+        till the last peak. 
+
+        :param a: the current new infection case recorded for the country. 
+        :param b: the new new infection case recorded for the country. 
+        :param cur_country: the name of the country. eg. Afghanistan. 
+        :param cur_date: the current date of the new infection case. 
+        """
         if a > b:
             self.last_peak_value = a
             self.last_peak_country = cur_country
@@ -181,14 +191,9 @@ class TaskOne:
         """
         It finds the highest and the second highest infections and the corresponding 
         countries.
-
-        params:
-            top_1: current highest number of infections. 
-            top_1_country: country with the current highest infections. 
-            top_2: current second highest number of infections.
-            top_2_country: country with the current second highest infections. 
-            cur_count: current number of infections. 
-            cur_country: current country. 
+             
+        :param cur_count: current number of infections for the country on a particular date.  
+        :param cur_country: the name of the current country. 
         """
         #if the current number of infections is greater than the current highest,
         # copy current highest to second highest 
@@ -213,14 +218,21 @@ class TaskOne:
     def calculate_rate(self, a, b):
         """
         This method finds the ratio of a to b. 
-            a: numerator.
-            b: denominator.
+        :param a: numerator.
+        :param b: denominator.
         """
         return a/float(b)
 
     def update_highest_infection_rate(self, cur_rate, cur_country):
         """
-        Update the highest  infection rate and country.
+        This method updates the highest  infection rate and the country with the 
+        highest infection rate. There is a global variable `highest_infection_rate`
+        that keeps track of the highest infection rate. When a new infection rate 
+        `cur_rate` is calculated, it is compared with it and update the highest 
+        infection rate if it `cur_rate` is greater. 
+
+        :param cur_rate: the infection rate of each country.
+        :param cur_country: the name of the country whose infection rate is passed along. 
         """
         #if current rate is greater than current highest rate.
         if cur_rate > self.highest_infection_rate:
@@ -229,7 +241,14 @@ class TaskOne:
 
     def update_highest_death_rate(self, cur_rate, cur_country):
         """
-        Update the highest  death rate and country.
+        This method updates the highest  death rate and the country with the 
+        highest death rate. There is a global variable `highest_death_rate`
+        that keeps track of the highest infection rate. When a new death rate 
+        `cur_rate` is calculated, it is compared with it and update the `highest_death_rate`
+        rate if it `cur_rate` is greater. 
+
+        :param cur_rate: the death rate of each country.
+        :param cur_country: the name of the country whose death rate is passed along. 
         """
         #if current rate is greater than current highest rate.
         if cur_rate > self.highest_death_rate:
