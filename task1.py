@@ -255,39 +255,29 @@ class TaskOne:
         """
         return a/float(b)
 
-
-    def update_highest_infection_rate(self, cur_rate, cur_country):
+    def update_highest_rate(self, cur_rate, cur_country, case_type = "infection"):
         """
-        This method updates the highest  infection rate and the country with the 
-        highest infection rate. There is a global variable `highest_infection_rate`
-        that keeps track of the highest infection rate. When a new infection rate 
-        `cur_rate` is calculated, it is compared with it and update the highest 
-        infection rate if it `cur_rate` is greater. 
+        This method updates the highest  infection or death rate and the country with the 
+        highest infection or death rate. There are  global variables `highest_infection_rate` and 
+        `highest_death_rate that keep track of the highest infection rate and highest 
+        death rate respectively. When a new infection rate 
+        `cur_rate` is calculated, it is compared with the appropriate rate and update it 
+        if it `cur_rate` is greater. 
 
         :param cur_rate: the infection rate of each country.
         :param cur_country: the name of the country whose infection rate is passed along. 
         """
-        #if current rate is greater than current highest rate.
-        if cur_rate > self.highest_infection_rate:
-            self.highest_infection_rate = cur_rate
-            self.highest_infection_rate_country = cur_country
 
-
-    def update_highest_death_rate(self, cur_rate, cur_country):
-        """
-        This method updates the highest  death rate and the country with the 
-        highest death rate. There is a global variable `highest_death_rate`
-        that keeps track of the highest infection rate. When a new death rate 
-        `cur_rate` is calculated, it is compared with it and update the `highest_death_rate`
-        rate if it `cur_rate` is greater. 
-
-        :param cur_rate: the death rate of each country.
-        :param cur_country: the name of the country whose death rate is passed along. 
-        """
-        #if current rate is greater than current highest rate.
-        if cur_rate > self.highest_death_rate:
-            self.highest_death_rate = cur_rate
-            self.highest_death_rate_country = cur_country
+        if case_type == "infection":
+            #if current rate is greater than current highest rate.
+            if cur_rate > self.highest_infection_rate:
+                self.highest_infection_rate = cur_rate
+                self.highest_infection_rate_country = cur_country
+        else:
+            #if current rate is greater than current highest rate.
+            if cur_rate > self.highest_death_rate:
+                self.highest_death_rate = cur_rate
+                self.highest_death_rate_country = cur_country
 
 
     def output_results(self, t, filename):
@@ -299,7 +289,7 @@ class TaskOne:
         """
         #write results to a file
         output_file = filename.split("\\")[-1].split(".")[-2]
-        with open("task1_solution-" + output_file + ".txt", "w") as f2:
+        with open("output/task1_solution-" + output_file + ".txt", "w") as f2:
             f2.write("(a) " + t.highest_infection_country + ", " +str(t.highest_infection) + "\n")
             f2.write("(b) " + t.second_highest_infection_country + ", " + str(t.second_highest_infection) + "\n")
             f2.write("(c) " +t.highest_infection_rate_country + ", " + str(t.highest_infection_rate) + "\n")
@@ -430,7 +420,7 @@ def task1(covid_file, population_file):
                         t.population[next_country["CountryExp"]]
                     )
 
-                    t.update_highest_infection_rate(inf_rate, next_country["CountryExp"])
+                    t.update_highest_rate(inf_rate, next_country["CountryExp"])
                     
                     #######################death rate##############
                     death_rate = t.calculate_rate(
@@ -438,8 +428,9 @@ def task1(covid_file, population_file):
                         t.confirmed_cases_by_country 
                     )
 
-                    t.update_highest_death_rate(
-                        death_rate, next_country["CountryExp"]
+                    t.update_highest_rate(
+                        death_rate, next_country["CountryExp"],
+                        case_type = "death"
                     )
 
                  #move to the next country
