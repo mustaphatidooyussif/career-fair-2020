@@ -200,7 +200,6 @@ class TaskTwo:
         :param algorithm: the algorithm to call. 
         """
         if algorithm == "kmp":
-            self.create_pattern(pattern_file)
             country, date = self.KMP_search(data_file)
             self.output_results(country, date, data_file)
         else:
@@ -278,7 +277,7 @@ class TaskTwo:
 
         """
         output_file = filename.split("\\")[-1].split(".")[-2]
-        with open("task2_solution-" + output_file + ".txt", "w") as f2:
+        with open("output/task2_solution-" + output_file + ".txt", "w") as f2:
             f2.write(country + "\n")
             f2.write(date + "\n")
 
