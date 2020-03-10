@@ -1,5 +1,5 @@
 ========================   AUTHORS =====================================
-		Mustapha Tidoo Yussif and Atule samule					       *
+		Mustapha Tidoo Yussif and Samuel Atule					       *
 						       
 ==========================Tasks Completed ============================== 
 				Task 1 
@@ -14,3 +14,4 @@
 
 Example:
 	python task1.py covid_data.csv population_data.csv
+	python task2.py covid_data.csv partial_time_series.csv

@@ -277,7 +277,7 @@ class TaskTwo:
         :param filename: the name of the input file. 
 
         """
-        output_file = filename.split(".")[0]
+        output_file = filename.split("\\")[-1].split(".")[-2]
         with open("task2_solution-" + output_file + ".txt", "w") as f2:
             f2.write(country + "\n")
             f2.write(date + "\n")
